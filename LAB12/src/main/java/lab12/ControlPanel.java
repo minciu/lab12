@@ -191,18 +191,16 @@ public class ControlPanel extends JPanel {
 	                encoder.writeObject(frame.designPanel);
 	                encoder.close();
 	            }
-	        } catch (IOException ex) {
-	          // System.err.println(ex.toString());
+	        } catch (IOException ex) {	          
 	        	ex.printStackTrace();
 	        }
 	    }
 
 	    
 	    
-	    
-
+	 
 		/**
-	     * Exit the application
+	       * Exit the application
 	     */
 	    private void exit(ActionEvent event) {
 	        System.exit(0);
