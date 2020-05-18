@@ -1,42 +1,124 @@
 package lab12;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.Polygon;
-import java.awt.Shape;
-import java.util.Random;
 
+import lombok.*;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
+import java.beans.BeanInfo;
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.swing.AbstractButton;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.table.DefaultTableModel;
 
-public class DesignPanel extends JPanel{
-	
-	private Graphics2D canvas;
-	private int forms;
-	
-	
-	private void drawShapeAt(int x, int y) {
-        Random rand = new Random();
-        canvas.setColor(new Color(rand.nextInt(0xFFFFFF)));
-        canvas.fill((Shape) new RegularPolygon(x, y, rand.nextInt((30 - 5) +1) +5, forms));
-        float dash1[] = {10.0f};
-        BasicStroke dashed =
-                new BasicStroke(1.0f,
-                        BasicStroke.CAP_BUTT,
-                        BasicStroke.JOIN_MITER,
-                        10.0f, dash1, 0.0f);
-        canvas.setStroke(dashed);
 
+
+@NoArgsConstructor
+public class DesignPanel extends JPanel implements Serializable{
+	private MainFrame frame;
+    @Getter
+    private int width;
+    @Getter
+    private int height;
+    
+    private JTextField textField;
+    List<JComponent> componentList;
+    
+    public List<JComponent> getComponentList() {
+        return componentList;
+    }
+    
+    public DesignPanel() {
+        componentList = new ArrayList<>();
+        setLayout(null);
     }
 
+    public DesignPanel(MainFrame frame, int width, int height) {
+        this.frame = frame;
+        this.width = width;
+        this.height = height;
+        
+        init();
+    }
+
+    public void setWidth(int width) {
+        this.width = width;
+        init();
+    }
+
+    public void setHeight(int height) {
+        this.height = height;
+        init();
+    }
+
+    private void init() {
+        setPreferredSize(new Dimension(this.width, this.height));
+    }
+
+    public void addComponent(Component component) {	
+    	add(component);   	    	            	
+        revalidate();
+        repaint();
+    }
+
+    
+    /**
+     * Whenever the user sets the focus on an added component,
+     * its properties should be displayed in a JTable component
+     */
+    public void addFocusListenerToComponent(Component component) {
+        component.addFocusListener(new FocusListener() {
+        	@SneakyThrows
+            @Override
+            public void focusGained(FocusEvent e) {
+        		
+                Class<?> componentClass = component.getClass();
+                BeanInfo info = null;
+				try {
+					info = Introspector.getBeanInfo(componentClass);
+				} catch (IntrospectionException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+                int i = 0;
+                DefaultTableModel model = (DefaultTableModel) frame.getProprietiesPanel().getProprietiesTable().getModel();
+                for (PropertyDescriptor propertyDescriptor : info.getPropertyDescriptors()) {
+                    model.setValueAt(String.valueOf(propertyDescriptor.getPropertyType()), i, 0);
+                    model.setValueAt(String.valueOf(propertyDescriptor.getName()), i, 1);
+                    ++i;
+                }
+                
+                
+                
+            }
+        	
+        	public void actionPerformed(ActionEvent e) {
+        		((AbstractButton) component).setText("change");
+        	}
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                // nothing
+            }
+        });
+    }
+    
+    
+
 	
-	public class RegularPolygon extends Polygon {
-	    public RegularPolygon(int x0, int y0, int radius, int sides) {
-	        double alpha = 2 * Math.PI / sides;
-	        for (int i = 0; i < sides; i++) {
-	            double x = x0 + radius * Math.cos(alpha * i);
-	            double y = y0 + radius * Math.sin(alpha * i);
-	            this.addPoint((int) x, (int) y);
-	        }
-	    }
-}}
+
+}
